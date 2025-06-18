@@ -131,6 +131,28 @@ function getTimeAgo(dateString) {
   return 'just now';
 }
 
+const handleDelete = async (id) => {
+  const confirm = window.confirm("Are you sure you want to delete this feedback?");
+  if (!confirm) return;
+
+  try {
+    const res = await fetch('/api/delete-feedback', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (res.ok) {
+      setfeedbacks(prev => prev.filter(f => f._id !== id));
+    } else {
+      alert('Failed to delete feedback');
+    }
+  } catch (error) {
+    console.error(error);
+    alert('Error deleting feedback');
+  }
+};
+
   return (
     <>
     <Navbar />
@@ -185,27 +207,36 @@ function getTimeAgo(dateString) {
 
         {/* Scrollable Feedback Section */}
         <div className="h-[400px] overflow-y-auto space-y-4 custom-scrollbar pr-2">
-          {feedbacks.length === 0 ? (
-            <p className="text-center text-purple-800">
-              No feedback received yet. Share your link to start collecting feedback!
-            </p>
-          ) : (
-            feedbacks.map((feedback, index) => (
-              <div
-                key={index}
-                className="bg-purple-600 p-4 rounded-lg shadow hover:shadow-lg transition"
-              >
-                <p className="text-white">{feedback.feedback}</p>
-                <div className="flex items-center justify-between mt-2 text-sm text-white">
-                  <span>Anonymous</span>
-                  <span className="flex items-center gap-1">
-                    {getTimeAgo(feedback.createdAt)}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
+  {feedbacks.length === 0 ? (
+    <p className="text-center text-purple-800">
+      No feedback received yet. Share your link to start collecting feedback!
+    </p>
+  ) : (
+    feedbacks.map((feedback, index) => (
+      <div
+        key={index}
+        className="bg-purple-600 p-4 rounded-lg shadow hover:shadow-lg transition relative"
+      >
+        <button
+          onClick={() => handleDelete(feedback._id)}
+          className="absolute top-2 right-2 text-white hover:text-red-300 text-sm"
+          title="Delete"
+        >
+          ✕
+        </button>
+
+        <p className="text-white">{feedback.feedback}</p>
+        <div className="flex items-center justify-between mt-2 text-sm text-white">
+          <span>Anonymous</span>
+          <span className="flex items-center gap-1">
+            {getTimeAgo(feedback.createdAt)}
+          </span>
         </div>
+      </div>
+    ))
+  )}
+</div>
+
       </div>
     )
   }
